@@ -116,7 +116,6 @@ MainGui.Add("Text", "w430", " ")
     if (FileExist("spaceaction_agreed.ini")) {
         ; Если сохранение есть, сразу активируем кнопку
         ContinueBtn.Text := "Принять ✓"
-        TrayTip "SpaceAction", "Скрипт готов к работе!", 1
     } else {
         ; Если сохранения нет, включаем таймер
         ContinueBtn.Enabled := false
@@ -158,12 +157,11 @@ ContinueScript(*) {
     FileAppend "agreed", "spaceaction_agreed.ini"
     BlockHotkeys(false)
     MainGui.Destroy() ; Скрываем окно
-    TrayTip "SpaceAction", "Скрипт активирован. Можно начинать работу!", 1
 }
 
 GuiClose(*) {
     ; Просто завершаем скрипт с предупреждением
-    MsgBox "Скрипт завершает работу!", "SpaceAction", 0x40
+    MsgBox "Скрипт завершает работу!", "AutoLong-Dash", 0x40
     ExitApp
 }
 
@@ -215,8 +213,6 @@ PerformActions() {
     local RestoreCtrl := false
     
     try {
-        ; УБРАЛ: TrayTip "SpaceAction", "Space нажат - выполняю действия", 1
-        
         ; Получаем координаты центра экрана
         MonitorGet 1, &Left, &Top, &Right, &Bottom
         CenterX := Right // 2
@@ -224,17 +220,14 @@ PerformActions() {
         
         ; Обработка Shift Lock
         RestoreCtrl := CheckAndHandleShiftLock(CenterX, CenterY)
-        ; УБРАЛ: if (RestoreCtrl) { TrayTip... }
         
         ; Выполняем основную последовательность действий
         ExecuteActionSequence(CenterX, CenterY, RestoreCtrl)
-        
-        ; УБРАЛ: TrayTip "SpaceAction", "Действия выполнены", 1
     }
     catch as Error {
         ; Гарантированная очистка
         Cleanup(RestoreCtrl)
-        TrayTip "SpaceAction", "Ошибка: " . Error.Message, 3
+        TrayTip "AutoLong-Dash", "Ошибка: " . Error.Message, 3
     }
 }
 
@@ -274,8 +267,8 @@ ExecuteActionSequence(CenterX, CenterY, RestoreCtrl) {
     Sleep DELAY_LONG
     Click "Left Up"
     
-    ; Возвращаем курсор
-    DllCall("SetCursorPos", "int", CenterX + 50, "int", CenterY)
+    ; Возвращаем курсор НА 300px ВПРАВО ОТ ЦЕНТРА
+    DllCall("SetCursorPos", "int", CenterX + 500, "int", CenterY)
      
     ; Разблокируем мышь
     BlockInput "MouseMoveOff"
@@ -285,7 +278,6 @@ ExecuteActionSequence(CenterX, CenterY, RestoreCtrl) {
         SendInput "{Ctrl down}"
         Sleep DELAY_SHORT
         SendInput "{Ctrl up}"
-        ; УБРАЛ: TrayTip "SpaceAction", "Shift Lock восстановлен", 1
     }
     
     ; Завершающее нажатие F11
